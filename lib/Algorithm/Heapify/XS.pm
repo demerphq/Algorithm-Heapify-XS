@@ -16,14 +16,18 @@ our @ISA = qw(Exporter);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	
+    heapify
+    heap_shift
+    heap_adjust_top
+    heap_adjust_item
+    heap_parent_idx
+    heap_left_child_idx
+    heap_right_child_idx
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-our @EXPORT = qw(
-	
-);
+our @EXPORT = qw();
 
 our $VERSION = '0.01';
 
@@ -31,6 +35,19 @@ require XSLoader;
 XSLoader::load('Algorithm::Heapify::XS', $VERSION);
 
 # Preloaded methods go here.
+
+sub heap_parent_idx($) {
+    return $_[0] ? int(($_[0] - 1) / 2) : undef;
+}
+
+sub heap_left_child_idx($) {
+    return 2*$_[0]+1;
+}
+
+sub heap_right_child_idx($) {
+    return 2*$_[0]+2;
+}
+
 
 1;
 __END__
