@@ -97,6 +97,9 @@ DESCRIPTION
         resulting new "top" (min/max) value. If $idx is outside the array
         does nothing.
 
+VERSION
+    This is version 0.02
+
 INSTALLATION
     To install this module type the following:
 
