@@ -104,11 +104,12 @@ array first. Typically they return the "top" of the heap after the operation has
 with the exception of the "shift" operation which returns the "top" of the heap before
 removing it.
 
-Currently there is no support for supplying a sort comparator akin to sort(), instead
-you should define an overloaded <=> operator if you wish to change the sort order.
-
-The ordering is expected to be *numeric*, if you wish to sort words you should use
-objects with overloading.
+There are four variants of all subs provided. The "max_" and "min_" variants, and the
+"maxstr_" and "minstr_" which provide descending and ascending and numeric and string
+ordering respectively.  If you wish more precise control over the ordering of items
+in the heap, such as objects, then C<use overload> to provide the required semantics by
+overloading the appropriate inequality operators, typically just one of C<< <=> >> or C<cmp>
+operators need be overloaded.
 
 =head2 EXPORT
 
@@ -122,9 +123,9 @@ None by default. All exports must be requested, or you can use ":all" to import 
 
 =item $min= min_heapify(@array)
 
-=item $max= maxstr_heapify(@array)
+=item $maxstr= maxstr_heapify(@array)
 
-=item $min= minstr_heapify(@array)
+=item $minstr= minstr_heapify(@array)
 
 These subs "heapify" the array and return its "top" (min/max) value. Prior use of the
 appropriate one of these subs is required to use all the other subs offered by this package.
@@ -133,9 +134,9 @@ appropriate one of these subs is required to use all the other subs offered by t
 
 =item $min= min_heap_shift(@array)
 
-=item $max= maxstr_heap_shift(@array)
+=item $maxstr= maxstr_heap_shift(@array)
 
-=item $min= minstr_heap_shift(@array)
+=item $minstr= minstr_heap_shift(@array)
 
 Return and remove the "top" (min/max) value from a heapified array while maintain the arrays
 heap-order.
@@ -144,31 +145,31 @@ heap-order.
 
 =item $min= min_heap_push(@array)
 
-=item $max= maxstr_heap_push(@array)
+=item $maxstr= maxstr_heap_push(@array)
 
-=item $min= minstr_heap_push(@array)
+=item $minstr= minstr_heap_push(@array)
 
 Insert an item into a heapified array while maintaining the arrays heap-order, and return the
 resulting "top" (min/max) value.
 
 =item $max= max_heap_adjust_top(@array)
 
-=item $max= min_heap_adjust_top(@array)
+=item $min= min_heap_adjust_top(@array)
 
-=item $max= maxstr_heap_adjust_top(@array)
+=item $maxstr= maxstr_heap_adjust_top(@array)
 
-=item $max= minstr_heap_adjust_top(@array)
+=item $minstr= minstr_heap_adjust_top(@array)
 
 If the weight of the top item in a heapified array ($array[0]) has changed, this function will
 adjust its position in the tree, and return the resulting new "top" (min/max) value.
 
 =item $max= max_heap_adjust_item(@array,$idx)
 
-=item $max= min_heap_adjust_item(@array,$idx)
+=item $min= min_heap_adjust_item(@array,$idx)
 
-=item $max= maxstr_heap_adjust_item(@array,$idx)
+=item $maxstr= maxstr_heap_adjust_item(@array,$idx)
 
-=item $max= minstr_heap_adjust_item(@array,$idx)
+=item $minstr= minstr_heap_adjust_item(@array,$idx)
 
 If the weight of a specific item in a heapified array has changed, this function will
 adjust its position in the tree, and return the resulting new "top" (min/max) value.
@@ -199,10 +200,26 @@ Yves Orton, E<lt>demerph@(that google thingee)E<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
+This software is released under the "MIT License".
+
 Copyright (C) 2018 by Yves Orton
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.18.4 or,
-at your option, any later version of Perl 5 you may have available.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 =cut
