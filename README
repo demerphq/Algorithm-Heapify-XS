@@ -45,12 +45,13 @@ DESCRIPTION
     performed, with the exception of the "shift" operation which returns the
     "top" of the heap before removing it.
 
-    Currently there is no support for supplying a sort comparator akin to
-    sort(), instead you should define an overloaded <=> operator if you wish
-    to change the sort order.
-
-    The ordering is expected to be *numeric*, if you wish to sort words you
-    should use objects with overloading.
+    There are four variants of all subs provided. The "max_" and "min_"
+    variants, and the "maxstr_" and "minstr_" which provide descending and
+    ascending and numeric and string ordering respectively. If you wish more
+    precise control over the ordering of items in the heap, such as objects,
+    then "use overload" to provide the required semantics by overloading the
+    appropriate inequality operators, typically just one of "<=>" or "cmp"
+    operators need be overloaded.
 
   EXPORT
     None by default. All exports must be requested, or you can use ":all" to
@@ -59,38 +60,38 @@ DESCRIPTION
   SUBS
     $max= max_heapify(@array)
     $min= min_heapify(@array)
-    $max= maxstr_heapify(@array)
-    $min= minstr_heapify(@array)
+    $maxstr= maxstr_heapify(@array)
+    $minstr= minstr_heapify(@array)
         These subs "heapify" the array and return its "top" (min/max) value.
         Prior use of the appropriate one of these subs is required to use
         all the other subs offered by this package.
 
     $max= max_heap_shift(@array)
     $min= min_heap_shift(@array)
-    $max= maxstr_heap_shift(@array)
-    $min= minstr_heap_shift(@array)
+    $maxstr= maxstr_heap_shift(@array)
+    $minstr= minstr_heap_shift(@array)
         Return and remove the "top" (min/max) value from a heapified array
         while maintain the arrays heap-order.
 
     $max= max_heap_push(@array)
     $min= min_heap_push(@array)
-    $max= maxstr_heap_push(@array)
-    $min= minstr_heap_push(@array)
+    $maxstr= maxstr_heap_push(@array)
+    $minstr= minstr_heap_push(@array)
         Insert an item into a heapified array while maintaining the arrays
         heap-order, and return the resulting "top" (min/max) value.
 
     $max= max_heap_adjust_top(@array)
-    $max= min_heap_adjust_top(@array)
-    $max= maxstr_heap_adjust_top(@array)
-    $max= minstr_heap_adjust_top(@array)
+    $min= min_heap_adjust_top(@array)
+    $maxstr= maxstr_heap_adjust_top(@array)
+    $minstr= minstr_heap_adjust_top(@array)
         If the weight of the top item in a heapified array ($array[0]) has
         changed, this function will adjust its position in the tree, and
         return the resulting new "top" (min/max) value.
 
     $max= max_heap_adjust_item(@array,$idx)
-    $max= min_heap_adjust_item(@array,$idx)
-    $max= maxstr_heap_adjust_item(@array,$idx)
-    $max= minstr_heap_adjust_item(@array,$idx)
+    $min= min_heap_adjust_item(@array,$idx)
+    $maxstr= maxstr_heap_adjust_item(@array,$idx)
+    $minstr= minstr_heap_adjust_item(@array,$idx)
         If the weight of a specific item in a heapified array has changed,
         this function will adjust its position in the tree, and return the
         resulting new "top" (min/max) value. If $idx is outside the array
@@ -118,7 +119,7 @@ AUTHOR
 COPYRIGHT AND LICENSE
     Copyright (C) 2018 by Yves Orton
 
-    This library is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself, either Perl version 5.18.4 or, at
-    your option, any later version of Perl 5 you may have available.
+    This software is released under the "MIT License".
+
+    See the file LICENSE.txt for more specifics.
 
