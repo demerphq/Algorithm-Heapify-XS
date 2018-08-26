@@ -52,3 +52,6 @@ XS.c
 \B\._
 callgrind\.out\..*$
 \.gdb_history
+
+\.gz$
+\.old$
