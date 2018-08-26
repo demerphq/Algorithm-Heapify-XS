@@ -1,8 +1,9 @@
 Changes
+lib/Algorithm/Heapify/XS.pm
 Makefile.PL
 MANIFEST
 ppport.h
 README
+t/max_heap.t
+t/min_heap.t
 XS.xs
-t/Algorithm-Heapify-XS.t
-lib/Algorithm/Heapify/XS.pm
