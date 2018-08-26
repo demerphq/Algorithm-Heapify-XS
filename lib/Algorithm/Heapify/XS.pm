@@ -173,13 +173,28 @@ If the weight of a specific item in a heapified array has changed, this function
 adjust its position in the tree, and return the resulting new "top" (min/max) value.
 If $idx is outside the array does nothing.
 
+=back
+
+=head1 INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+=head1 DEPENDENCIES
+
+This module is implemented in XS, and requires a working C compiler and Perl build tools environment to build.
+
 =head1 SEE ALSO
 
-CPAN - There are other heap packages with different interfaces if you dont like this one.
+CPAN - There are other heap packages with different interfaces if you don't like this one.
 
 =head1 AUTHOR
 
-Yves Orton, E<lt>yorton@(none)E<gt>
+Yves Orton, E<lt>demerph@(that google thingee)E<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -188,6 +203,5 @@ Copyright (C) 2018 by Yves Orton
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.18.4 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut

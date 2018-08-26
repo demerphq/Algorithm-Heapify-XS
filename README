@@ -1,40 +1,122 @@
-Algorithm-Heapify-XS version 0.01
-=================================
+NAME
+    Algorithm::Heapify::XS - Perl extension for supplying simple heap
+    primitives for arrays.
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+SYNOPSIS
+      use Algorithm::Heapify::XS qw(max_heapify max_heap_shift);
+      my @array= (1..10);
+      max_heapify(@array);
+      while (defined(my $top= max_heap_shift(@array))) {
+        print $top;
+      }
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+DESCRIPTION
+    A heap is an array based data structure where the array is treated as a
+    balanced tree of items where each item obeys a given inequality
+    constraint with its its parent and children, but not with its siblings.
+
+    This data structure has a number of nice properties:
+
+    a) the tree does not require "child" pointers, but instead infers
+    parent/child relationships from their position in the array. The parent
+    of a node i is defined to reside in position int((i-1)/2), and the left
+    and right children of a node i reside in position (i*2+1) and (i*2+2)
+    respectively.
+
+    b) "heapifying" an array is O(N) as compared to N * log2(N) for a
+    typical sort.
+
+    c) Accessing the top item is O(1), and removing it from the array is
+    O(log(N)).
+
+    d) Inserting a new item into the heap is O(log(N))
+
+    This means that for applications that need find only the top K of an
+    array can do it faster than sorting the array, and there is no need for
+    wrapper objects to represent the tree.
+
+  INTERFACE
+    All operations are in-place on the array passed as an argument, and all
+    require that the appropriate "heapify" (either max_heapify or
+    min_heapify) operation has been called on the array first. Typically
+    they return the "top" of the heap after the operation has been
+    performed, with the exception of the "shift" operation which returns the
+    "top" of the heap before removing it.
+
+    Currently there is no support for supplying a sort comparator akin to
+    sort(), instead you should define an overloaded <=> operator if you wish
+    to change the sort order.
+
+    The ordering is expected to be *numeric*, if you wish to sort words you
+    should use objects with overloading.
+
+  EXPORT
+    None by default. All exports must be requested, or you can use ":all" to
+    import then all.
+
+  SUBS
+    $max= max_heapify(@array)
+    $min= min_heapify(@array)
+    $max= maxstr_heapify(@array)
+    $min= minstr_heapify(@array)
+        These subs "heapify" the array and return its "top" (min/max) value.
+        Prior use of the appropriate one of these subs is required to use
+        all the other subs offered by this package.
+
+    $max= max_heap_shift(@array)
+    $min= min_heap_shift(@array)
+    $max= maxstr_heap_shift(@array)
+    $min= minstr_heap_shift(@array)
+        Return and remove the "top" (min/max) value from a heapified array
+        while maintain the arrays heap-order.
+
+    $max= max_heap_push(@array)
+    $min= min_heap_push(@array)
+    $max= maxstr_heap_push(@array)
+    $min= minstr_heap_push(@array)
+        Insert an item into a heapified array while maintaining the arrays
+        heap-order, and return the resulting "top" (min/max) value.
+
+    $max= max_heap_adjust_top(@array)
+    $max= min_heap_adjust_top(@array)
+    $max= maxstr_heap_adjust_top(@array)
+    $max= minstr_heap_adjust_top(@array)
+        If the weight of the top item in a heapified array ($array[0]) has
+        changed, this function will adjust its position in the tree, and
+        return the resulting new "top" (min/max) value.
+
+    $max= max_heap_adjust_item(@array,$idx)
+    $max= min_heap_adjust_item(@array,$idx)
+    $max= maxstr_heap_adjust_item(@array,$idx)
+    $max= minstr_heap_adjust_item(@array,$idx)
+        If the weight of a specific item in a heapified array has changed,
+        this function will adjust its position in the tree, and return the
+        resulting new "top" (min/max) value. If $idx is outside the array
+        does nothing.
 
 INSTALLATION
+    To install this module type the following:
 
-To install this module type the following:
-
-   perl Makefile.PL
-   make
-   make test
-   make install
+       perl Makefile.PL
+       make
+       make test
+       make install
 
 DEPENDENCIES
+    This module is implemented in XS, and requires a working C compiler and
+    Perl build tools environment to build.
 
-This module requires these other modules and libraries:
+SEE ALSO
+    CPAN - There are other heap packages with different interfaces if you
+    don't like this one.
 
-  blah blah blah
+AUTHOR
+    Yves Orton, <demerph@(that google thingee)>
 
-COPYRIGHT AND LICENCE
+COPYRIGHT AND LICENSE
+    Copyright (C) 2018 by Yves Orton
 
-Put the correct copyright and licence information here.
-
-Copyright (C) 2018 by Yves Orton
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.18.4 or,
-at your option, any later version of Perl 5 you may have available.
-
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself, either Perl version 5.18.4 or, at
+    your option, any later version of Perl 5 you may have available.
 
