@@ -1,5 +1,6 @@
 Changes
 lib/Algorithm/Heapify/XS.pm
+LICENSE.txt
 Makefile.PL
 MANIFEST
 ppport.h
