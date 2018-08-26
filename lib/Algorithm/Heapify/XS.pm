@@ -76,8 +76,9 @@ Algorithm::Heapify::XS - Perl extension for supplying simple heap primitives for
 =head1 DESCRIPTION
 
 A heap is an array based data structure where the array is treated as a balanced tree
-of items where each item obeys a given inequality constraint with its its parent and children,
-but not with its siblings.
+of items where each item obeys a given inequality constraint with its parent and children,
+but not with its siblings. This allows it to be put into "nearly" sorted order more
+efficiently than an actual sort would.
 
 This data structure has a number of nice properties:
 
