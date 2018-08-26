@@ -35,7 +35,7 @@ $EXPORT_TAGS{idx}= [ grep { /_idx\z/ } @EXPORT_OK ];
 
 our @EXPORT = qw();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require XSLoader;
 XSLoader::load('Algorithm::Heapify::XS', $VERSION);
@@ -176,6 +176,10 @@ adjust its position in the tree, and return the resulting new "top" (min/max) va
 If $idx is outside the array does nothing.
 
 =back
+
+=head1 VERSION
+
+This is version 0.02
 
 =head1 INSTALLATION
 
