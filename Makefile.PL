@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Algorithm::Heapify::XS',
     VERSION_FROM      => 'lib/Algorithm/Heapify/XS.pm', # finds $VERSION
-    OPTIMIZE          => '-g',
+    OPTIMIZE          => '-O3',
     #CCFLAGS           => '-O0',
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
