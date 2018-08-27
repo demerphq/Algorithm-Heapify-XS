@@ -35,7 +35,7 @@ $EXPORT_TAGS{idx}= [ grep { /_idx\z/ } @EXPORT_OK ];
 
 our @EXPORT = qw();
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 require XSLoader;
 XSLoader::load('Algorithm::Heapify::XS', $VERSION);
@@ -113,7 +113,9 @@ operators need be overloaded.
 
 =head2 EXPORT
 
-None by default. All exports must be requested, or you can use ":all" to import then all.
+None by default. All exports must be requested, or you can use ":all" to import then all,
+you can also import groups by prefix, eg ":max", ":min", ":maxstr", ":minstr" and ":idx"
+to export
 
 =head2 SUBS
 
@@ -175,11 +177,21 @@ If the weight of a specific item in a heapified array has changed, this function
 adjust its position in the tree, and return the resulting new "top" (min/max) value.
 If $idx is outside the array does nothing.
 
+=item $idx= heap_parent_idx($idx)
+
+Returns the defined location for the node residing at index $idx in a heap, or undef if the $idx is 0.
+
+=item $idx= heap_left_child_idx($idx)
+
+=item $idx= heap_right_child_idx($idx)
+
+Returns the defined location for the children of a node residing at index $idx in a heap.
+
 =back
 
 =head1 VERSION
 
-This is version 0.02
+This is version 0.03
 
 =head1 INSTALLATION
 

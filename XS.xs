@@ -17,7 +17,7 @@
       ? !(is_min & 1) : (is_min & 1) )
 
 
-I32 sift_up(SV **a, ssize_t start, ssize_t end, I32 is_min) {
+I32 sift_up(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
      /*start represents the limit of how far up the heap to sift.
        end is the node to sift up. */
     ssize_t child = end;
@@ -49,7 +49,7 @@ I32 sift_up(SV **a, ssize_t start, ssize_t end, I32 is_min) {
 }
 
 /*Repair the heap whose root element is at index 'start', assuming the heaps rooted at its children are valid*/
-I32 sift_down(SV **a, ssize_t start, ssize_t end, I32 is_min) {
+I32 sift_down(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
     ssize_t root = start;
     I32 root_is_magic = SvAMAGIC(a[root]);
     I32 swapped = 0;
@@ -97,20 +97,20 @@ I32 sift_down(SV **a, ssize_t start, ssize_t end, I32 is_min) {
 }
 
 /* this is O(N log N) */
-void heapify_with_sift_up(SV **a, ssize_t count, I32 is_min) {
+void heapify_with_sift_up(pTHX_ SV **a, ssize_t count, I32 is_min) {
     ssize_t end = 1; /* end is assigned the index of the first (left) child of the root */
 
     while (end < count) {
         /*sift up the node at index end to the proper place such that all nodes above
           the end index are in heap order */
-        (void)sift_up(a, 0, end, is_min);
+        (void)sift_up(aTHX_ a, 0, end, is_min);
         end++;
     }
     /* after sifting up the last node all nodes are in heap order */
 }
 
 /* this is O(N) */
-void heapify_with_sift_down(SV **a, ssize_t count, I32 is_min) {
+void heapify_with_sift_down(pTHX_ SV **a, ssize_t count, I32 is_min) {
     /*start is assigned the index in 'a' of the last parent node
       the last element in a 0-based array is at index count-1; find the parent of that element */
     ssize_t start = iParent(count-1);
@@ -118,7 +118,7 @@ void heapify_with_sift_down(SV **a, ssize_t count, I32 is_min) {
     while (start >= 0) {
         /* sift down the node at index 'start' to the proper place such that all nodes below
          the start index are in heap order */
-        (void)sift_down(a, start, count - 1, is_min);
+        (void)sift_down(aTHX_ a, start, count - 1, is_min);
         /* go to the next parent node */
         start--;
     }
@@ -151,7 +151,7 @@ PPCODE:
     FORCE_SCALAR(fakeop);
     count = av_top_index(av)+1;
     if ( count ) {
-        heapify_with_sift_down(AvARRAY(av),count,ix);
+        heapify_with_sift_down(aTHX_ AvARRAY(av),count,ix);
         ST(0)= AvARRAY(av)[0];
         XSRETURN(1);
     }
@@ -182,7 +182,7 @@ PPCODE:
         AvARRAY(av)[top]= tmp;
         ST(0)= av_pop(av);
         if (count > 2)
-            sift_down(AvARRAY(av),0,top-1,ix);
+            sift_down(aTHX_ AvARRAY(av),0,top-1,ix);
         XSRETURN(1);
     }
     else {
@@ -208,7 +208,7 @@ PPCODE:
     av_push(av,newSVsv(sv));
     top= av_top_index(av);
     count= top+1;
-    sift_up(AvARRAY(av),0,top,ix);
+    sift_up(aTHX_ AvARRAY(av),0,top,ix);
     ST(0)= AvARRAY(av)[0];
     XSRETURN(1);
 
@@ -230,7 +230,7 @@ PPCODE:
     top= av_top_index(av);
     count= top+1;
     if ( count ) {
-        (void)sift_down(AvARRAY(av),0,top,ix);
+        (void)sift_down(aTHX_ AvARRAY(av),0,top,ix);
         ST(0)= AvARRAY(av)[0];
         XSRETURN(1);
     } else {
@@ -256,8 +256,8 @@ PPCODE:
     top= av_top_index(av);
     count= top+1;
     if ( idx < count ) {
-        if (!idx || !sift_up(AvARRAY(av),0,idx,ix))
-            (void)sift_down(AvARRAY(av),idx,top,ix);
+        if (!idx || !sift_up(aTHX_ AvARRAY(av),0,idx,ix))
+            (void)sift_down(aTHX_ AvARRAY(av),idx,top,ix);
         ST(0)= AvARRAY(av)[0];
         XSRETURN(1);
     } else {
