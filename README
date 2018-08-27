@@ -55,7 +55,8 @@ DESCRIPTION
 
   EXPORT
     None by default. All exports must be requested, or you can use ":all" to
-    import then all.
+    import then all, you can also import groups by prefix, eg ":max",
+    ":min", ":maxstr", ":minstr" and ":idx" to export
 
   SUBS
     $max= max_heapify(@array)
@@ -97,8 +98,17 @@ DESCRIPTION
         resulting new "top" (min/max) value. If $idx is outside the array
         does nothing.
 
+    $idx= heap_parent_idx($idx)
+        Returns the defined location for the node residing at index $idx in
+        a heap, or undef if the $idx is 0.
+
+    $idx= heap_left_child_idx($idx)
+    $idx= heap_right_child_idx($idx)
+        Returns the defined location for the children of a node residing at
+        index $idx in a heap.
+
 VERSION
-    This is version 0.02
+    This is version 0.04
 
 INSTALLATION
     To install this module type the following:

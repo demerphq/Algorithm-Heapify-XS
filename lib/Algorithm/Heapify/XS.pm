@@ -35,7 +35,7 @@ $EXPORT_TAGS{idx}= [ grep { /_idx\z/ } @EXPORT_OK ];
 
 our @EXPORT = qw();
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 require XSLoader;
 XSLoader::load('Algorithm::Heapify::XS', $VERSION);
@@ -191,7 +191,7 @@ Returns the defined location for the children of a node residing at index $idx i
 
 =head1 VERSION
 
-This is version 0.03
+This is version 0.04
 
 =head1 INSTALLATION
 
