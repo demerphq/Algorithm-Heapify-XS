@@ -9,6 +9,10 @@
 #define iLeftChild(i)   ((2*(i)) + 1)
 #define iRightChild(i)  ((2*(i)) + 2)
 
+#ifndef Perl_do_ncmp
+    #define Perl_do_ncmp(child, parent) (SvNV(child) - SvNV(parent))
+#endif
+
 #define OUT_OF_ORDER(a,tmpsv,child_is_magic,parent_is_magic,child,parent,is_min)                \
     ( ( ( (child_is_magic) || (parent_is_magic) )                                               \
         ? (((tmpsv) = amagic_call((a)[(child)], (a)[(parent)], is_min & 2 ? sgt_amg : gt_amg, 0)) && SvTRUE((tmpsv)))  \
