@@ -34,6 +34,8 @@ plan skip_all => 'needs UV values larger than NV can exactly represent'
 
 my $big = ~0;
 my @values = ($big - 1, $big, $big - 2, $big - 3, $big - 4);
+my @expect_max = ($big, $big - 1, $big - 2, $big - 3, $big - 4);
+my @expect_min = reverse @expect_max;
 
 {
     my @heap = map Local::BigNumOnly->new($_), @values;
@@ -44,7 +46,7 @@ my @values = ($big - 1, $big, $big - 2, $big - 3, $big - 4);
 
     is_deeply(
         \@got,
-        [ sort { $b <=> $a } @values ],
+        \@expect_max,
         'max heap keeps overloaded large UVs in numeric order',
     );
 }
@@ -58,7 +60,7 @@ my @values = ($big - 1, $big, $big - 2, $big - 3, $big - 4);
 
     is_deeply(
         \@got,
-        [ sort { $a <=> $b } @values ],
+        \@expect_min,
         'min heap keeps overloaded large UVs in numeric order',
     );
 }
