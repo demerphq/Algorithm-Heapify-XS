@@ -1,5 +1,10 @@
 Revision history for Perl extension Algorithm::Heapify::XS.
 
+0.08  Tue Jun 30 2026
+        - Expand the overload regression coverage to exercise heap push,
+          heap adjust, explicit numeric <=> overloads, and explicit string
+          cmp overloads across the supported perl range.
+
 0.07  Tue Jun 30 2026
         - Fix overloaded numeric comparisons for large integer values.
           Thanks to Tony Cook (tonycoz) for the report and analysis in
