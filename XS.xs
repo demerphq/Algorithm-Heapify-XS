@@ -9,11 +9,13 @@
 #define iLeftChild(i)   ((2*(i)) + 1)
 #define iRightChild(i)  ((2*(i)) + 2)
 
-#define OUT_OF_ORDER(a,tmpsv,child_is_magic,parent_is_magic,child,parent,is_min)                \
-    ( ( ( (child_is_magic) || (parent_is_magic) )                                               \
-        ? (((tmpsv) = amagic_call((a)[(child)], (a)[(parent)], is_min & 2 ? sgt_amg : gt_amg, 0)) && SvTRUE((tmpsv)))  \
-        : ( ((is_min & 2) ? Perl_sv_cmp(aTHX_ (a)[(child)], a[(parent)]) \
-                          : my_Perl_do_ncmp(aTHX_ (a)[(child)], a[(parent)])) > 0) )\
+#define HAVE_PERL_SV_NUMCMP \
+    (PERL_REVISION > 5 || (PERL_REVISION == 5 && (PERL_VERSION > 43 || (PERL_VERSION == 43 && PERL_SUBVERSION >= 8))))
+
+#define OUT_OF_ORDER(a,child,parent,is_min)                                    \
+    ( ( (is_min & 2)                                                           \
+        ? my_sv_string_gt(aTHX_ (a)[(child)], (a)[(parent)])                   \
+        : my_sv_num_gt(aTHX_ (a)[(child)], (a)[(parent)]))                     \
       ? !(is_min & 1) : (is_min & 1) )
 
 #define FORCE_SCALAR(fakeop)                    \
@@ -100,29 +102,68 @@ my_Perl_do_ncmp(pTHX_ SV* const left, SV * const right)
 }
 #endif
 
+static bool
+my_sv_string_gt(pTHX_ SV *left, SV *right)
+{
+    SV *tmpsv = NULL;
+
+    if (SvAMAGIC(left) || SvAMAGIC(right)) {
+        tmpsv = amagic_call(left, right, sgt_amg, 0);
+        if (tmpsv) {
+            return SvTRUE(tmpsv);
+        }
+    }
+
+    return Perl_sv_cmp(aTHX_ left, right) > 0;
+}
+
+static bool
+my_sv_num_gt(pTHX_ SV *left, SV *right)
+{
+#if HAVE_PERL_SV_NUMCMP
+    return sv_numcmp(left, right) > 0;
+#else
+    if (SvAMAGIC(left) || SvAMAGIC(right)) {
+        SV *tmpsv = amagic_call(left, right, gt_amg, 0);
+        if (tmpsv) {
+            return SvTRUE(tmpsv);
+        }
+
+        if (SvAMAGIC(left)) {
+            tmpsv = AMG_CALLunary(left, numer_amg);
+            if (tmpsv) {
+                left = tmpsv;
+            }
+        }
+        if (SvAMAGIC(right)) {
+            tmpsv = AMG_CALLunary(right, numer_amg);
+            if (tmpsv) {
+                right = tmpsv;
+            }
+        }
+    }
+
+    return my_Perl_do_ncmp(aTHX_ left, right) > 0;
+#endif
+}
+
 
 I32 sift_up(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
      /*start represents the limit of how far up the heap to sift.
        end is the node to sift up. */
     ssize_t child = end;
-    SV *tmpsv = NULL;
-    I32 child_is_magic;
     I32 swapped = 0;
     SvGETMAGIC(a[child]);
-    child_is_magic= SvAMAGIC(a[child]);
 
     while (child > start) {
         ssize_t parent = iParent(child);
-        I32 parent_is_magic;
         SvGETMAGIC(a[parent]);
-        parent_is_magic= SvAMAGIC(a[parent]);
-        if ( OUT_OF_ORDER(a,tmpsv,child_is_magic,parent_is_magic,child,parent,is_min) ) {
+        if ( OUT_OF_ORDER(a,child,parent,is_min) ) {
             SV *swap_tmp= a[parent];
             a[parent]= a[child];
             a[child]= swap_tmp;
 
             child = parent; /* repeat to continue sifting up the parent now */
-            child_is_magic= parent_is_magic;
             swapped++;
         }
         else {
@@ -135,29 +176,22 @@ I32 sift_up(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
 /*Repair the heap whose root element is at index 'start', assuming the heaps rooted at its children are valid*/
 I32 sift_down(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
     ssize_t root = start;
-    I32 root_is_magic = SvAMAGIC(a[root]);
     I32 swapped = 0;
 
     while (iLeftChild(root) <= end) {       /* While the root has at least one child */
         ssize_t child = iLeftChild(root);       /* Left child of root */
-        I32 child_is_magic = SvAMAGIC(a[child]);
         ssize_t swap = root;                    /* Keeps track of child to swap with */
-        I32 swap_is_magic = root_is_magic;
-        SV *tmpsv = NULL;
 
         /* if the root is smaller than the left child
          *      then the swap is with the left child */
-        if ( OUT_OF_ORDER(a,tmpsv,child_is_magic,swap_is_magic,child,swap,is_min) ) {
+        if ( OUT_OF_ORDER(a,child,swap,is_min) ) {
             swap = child;
-            swap_is_magic = child_is_magic;
         }
         /* if there is a right child and the right child is larger than the root or the left child
          *      then the swap is with the right child */
         if (child+1 <= end) {
-            child_is_magic = SvAMAGIC(a[child+1]);
-            if ( OUT_OF_ORDER(a,tmpsv,child_is_magic,swap_is_magic,child+1,swap,is_min) ) {
+            if ( OUT_OF_ORDER(a,child+1,swap,is_min) ) {
                 swap = child + 1;
-                swap_is_magic = child_is_magic;
             }
         }
         /* check if we need to swap or if this tree is in heap-order */
@@ -173,7 +207,6 @@ I32 sift_down(pTHX_ SV **a, ssize_t start, ssize_t end, I32 is_min) {
             /* continue sifting down the child by setting the root to the chosen child
              * effectively we sink down the tree towards the leafs */
             root = swap;
-            root_is_magic = swap_is_magic;
             swapped++;
         }
     }
