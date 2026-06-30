@@ -44,7 +44,6 @@ I32
 my_Perl_do_ncmp(pTHX_ SV* const left, SV * const right)
 {
     PERL_ARGS_ASSERT_DO_NCMP;
-#ifdef PERL_PRESERVE_IVUV
     /* Fortunately it seems NaN isn't IOK */
     if (SvIV_please_nomg(right) && SvIV_please_nomg(left)) {
             if (!SvIsUV(left)) {
@@ -83,7 +82,6 @@ my_Perl_do_ncmp(pTHX_ SV* const left, SV * const right)
             }
             NOT_REACHED; /* NOTREACHED */
     }
-#endif
     {
       NV const lnv = SvNV_nomg(left);
       NV const rnv = SvNV_nomg(right);
@@ -107,14 +105,86 @@ my_Perl_do_ncmp(pTHX_ SV* const left, SV * const right)
 #endif
 
 static bool
+my_has_real_overload_method(pTHX_ SV *sv, const char *name, STRLEN len)
+{
+    GV *gv;
+    CV *cv;
+    GV *cvgv;
+    HV *stash;
+    const HEK *gvhek;
+    const HEK *stashek;
+
+    if (!SvAMAGIC(sv) || !SvROK(sv)) {
+        return FALSE;
+    }
+
+    stash = SvSTASH(SvRV(sv));
+    if (!stash) {
+        return FALSE;
+    }
+
+    gv = gv_fetchmeth_pvn(stash, name, len, -1, 0);
+    if (!gv) {
+        return FALSE;
+    }
+
+    cv = GvCV(gv);
+    if (!cv) {
+        return FALSE;
+    }
+
+    cvgv = CvGV(cv);
+    if (!cvgv) {
+        return TRUE;
+    }
+
+    gvhek = GvNAME_HEK(cvgv);
+    stashek = HvNAME_HEK(GvSTASH(cvgv));
+    if (!gvhek || !stashek) {
+        return TRUE;
+    }
+
+    return !(stashek
+        && memEQs(HEK_KEY(gvhek), HEK_LEN(gvhek), "nil")
+        && memEQs(HEK_KEY(stashek), HEK_LEN(stashek), "overload"));
+}
+
+static SV *
+my_sv_2num(pTHX_ SV *sv)
+{
+    if (!SvROK(sv)) {
+        return sv;
+    }
+
+    if (SvAMAGIC(sv)) {
+        SV *tmpsv = AMG_CALLunary(sv, numer_amg);
+        if (tmpsv && (!SvROK(tmpsv) || SvRV(tmpsv) != SvRV(sv))) {
+            return my_sv_2num(aTHX_ tmpsv);
+        }
+    }
+
+    return sv_2mortal(newSVuv(PTR2UV(SvRV(sv))));
+}
+
+static bool
 my_sv_string_gt(pTHX_ SV *left, SV *right)
 {
     SV *tmpsv = NULL;
 
     if (SvAMAGIC(left) || SvAMAGIC(right)) {
-        tmpsv = amagic_call(left, right, sgt_amg, 0);
-        if (tmpsv) {
-            return SvTRUE(tmpsv);
+        if (my_has_real_overload_method(aTHX_ left, "(gt", 3)
+            || my_has_real_overload_method(aTHX_ right, "(gt", 3)) {
+            tmpsv = amagic_call(left, right, sgt_amg, 0);
+            if (tmpsv) {
+                return SvTRUE(tmpsv);
+            }
+        }
+        if (my_has_real_overload_method(aTHX_ left, "(cmp", 4)
+            || my_has_real_overload_method(aTHX_ right, "(cmp", 4)) {
+            tmpsv = amagic_call(left, right, scmp_amg, 0);
+            if (tmpsv) {
+                return SvIV(tmpsv) > 0;
+            }
         }
     }
 
@@ -128,24 +198,28 @@ my_sv_num_gt(pTHX_ SV *left, SV *right)
     return sv_numcmp(left, right) > 0;
 #else
     if (SvAMAGIC(left) || SvAMAGIC(right)) {
-        SV *tmpsv = amagic_call(left, right, gt_amg, 0);
-        if (tmpsv) {
-            return SvTRUE(tmpsv);
+        SV *tmpsv = NULL;
+
+        if (my_has_real_overload_method(aTHX_ left, "(>", 2)
+            || my_has_real_overload_method(aTHX_ right, "(>", 2)) {
+            tmpsv = amagic_call(left, right, gt_amg, 0);
+            if (tmpsv) {
+                return SvTRUE(tmpsv);
+            }
         }
 
-        if (SvAMAGIC(left)) {
-            tmpsv = AMG_CALLunary(left, numer_amg);
+        if (my_has_real_overload_method(aTHX_ left, "(<=>", 4)
+            || my_has_real_overload_method(aTHX_ right, "(<=>", 4)) {
+            tmpsv = amagic_call(left, right, ncmp_amg, 0);
             if (tmpsv) {
-                left = tmpsv;
+                return SvIV(tmpsv) > 0;
             }
         }
-        if (SvAMAGIC(right)) {
-            tmpsv = AMG_CALLunary(right, numer_amg);
-            if (tmpsv) {
-                right = tmpsv;
-            }
-        }
+
     }
+
+    left = my_sv_2num(aTHX_ left);
+    right = my_sv_2num(aTHX_ right);
 
     return my_Perl_do_ncmp(aTHX_ left, right) > 0;
 #endif
