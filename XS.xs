@@ -5,6 +5,10 @@
 
 #include "ppport.h"
 
+#ifndef NOT_REACHED
+#  define NOT_REACHED assert(0)
+#endif
+
 #define iParent(i)      (((i)-1) / 2)
 #define iLeftChild(i)   ((2*(i)) + 1)
 #define iRightChild(i)  ((2*(i)) + 2)
